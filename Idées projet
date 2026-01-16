@@ -1,0 +1,323 @@
+# 🍅 StudyTogether - Prompt pour développement MVP
+
+## Vision du projet
+Crée une application web Pomodoro sociale pour étudiants qui combat la procrastination et la solitude pendant les révisions. L'app transforme l'étude solitaire en expérience sociale et gamifiée.
+
+## Positionnement
+- **Inspiration design** : Pomofocus (minimaliste, chaleureux) + Duolingo (gamification) + Strava (social)
+- **Public cible** : Étudiants français/francophones (lycée, prépa, université, grandes écoles) 
+- **Différenciation** : Premier Pomodoro vraiment social avec leaderboards par école/promo
+
+## Stack technique recommandée
+```
+Frontend: React 18+ avec Vite
+Styling: Tailwind CSS
+Backend/Auth/DB: Supabase (gratuit jusqu'à 50k users)
+- Auth Google OAuth
+- PostgreSQL database
+- Real-time subscriptions pour leaderboards
+- Row Level Security
+Hosting: Vercel (gratuit, déploiement auto)
+State management: React Context ou Zustand
+Icons: Lucide React
+Emails: Resend (3k/mois gratuit)
+```
+
+## Design System
+
+**Couleurs** :
+```css
+Primary: #ff6b6b (corail)
+Secondary: #ff8e53 (orange saumon)
+Background: #fff8f0 (crème)
+Surface: #ffffff (blanc)
+Border: #ffe8d6 (pêche clair)
+Text-primary: #3d3d3d (gris foncé)
+Text-secondary: #6b5b50 (brun)
+Text-muted: #8b7d72 (taupe)
+Success: #4ade80 (vert)
+```
+
+**Typographie** :
+- Font: SF Pro Display / -apple-system fallback
+- Titres: 700-800 weight
+- Body: 400-500 weight
+- Border-radius: 25-30px (très arrondi)
+
+**Ambiance** : Chaleureux, minimaliste, friendly, pas corporate
+
+## Fonctionnalités MVP (Phase 1 - 4 semaines)
+
+### 1. Authentication
+- [x] Login avec Google (Supabase Auth)
+- [x] Onboarding : nom, email .edu pour détecter école, upload avatar (optionnel)
+- [x] Profil basique (nom, avatar, école, niveau)
+
+### 2. Timer Pomodoro
+- [x] 3 modes : Travail (25min), Pause courte (5min), Pause longue (15min)
+- [x] Settings personnalisables (durées modifiables)
+- [x] Display géant (96px) avec compte à rebours
+- [x] Controls : Play/Pause, Reset
+- [x] Notification sonore + browser notification à la fin
+- [x] Auto-switch en pause après session (optionnel dans settings)
+
+### 3. Système d'amis
+- [x] Ajouter amis par email ou username
+- [x] Accepter/refuser demandes d'amis
+- [x] Liste d'amis avec statut "en ligne" / "hors ligne"
+- [x] Voir combien d'amis étudient en temps réel
+- [x] Widget "X amis étudient maintenant" avec avatars
+
+### 4. Leaderboard amis (priorité 1)
+- [x] Classement hebdomadaire des amis
+- [x] Métrique : heures d'étude cette semaine
+- [x] Display : rang, avatar, nom, heures
+- [x] Top 3 avec médailles 🥇🥈🥉
+- [x] Highlight de l'utilisateur (même si pas top 3)
+- [x] Reset automatique chaque lundi 00h00
+
+### 5. Stats personnelles
+- [x] Dashboard : sessions aujourd'hui, cette semaine, ce mois
+- [x] Streak de jours consécutifs (🔥)
+- [x] Total d'heures all-time
+- [x] Graphique simple des 7 derniers jours (bar chart)
+- [x] Historique des sessions (date, durée, type)
+
+### 6. Système XP & Niveaux basique
+- [x] Gagner XP : 10 XP par session de 25min complétée
+- [x] Niveaux : 100 XP par niveau
+- [x] Display niveau sur profil
+- [x] Barre de progression vers niveau suivant
+
+## Fonctionnalités Phase 2 (après validation MVP - 3 semaines)
+
+### 7. Groupes / Classes
+- [ ] Créer un groupe (nom, emoji, description)
+- [ ] Code d'invitation pour rejoindre
+- [ ] Liste des membres du groupe
+- [ ] Leaderboard du groupe (hebdo)
+- [ ] Stats agrégées du groupe (total heures)
+
+### 8. Sessions de groupe synchronisées
+- [ ] Lancer une session de groupe
+- [ ] Tous les participants ont le même timer synchro
+- [ ] Voir les participants en temps réel
+- [ ] Notification quand un ami lance une session
+- [ ] Chat texte simple pendant les pauses
+
+### 9. Leaderboards multiples
+- [ ] Onglets : Amis / Mon groupe / Mon école / National
+- [ ] Détection école via domaine email (.edu, .ac.fr, @hec.fr, etc.)
+- [ ] Classement par école (agrégé)
+- [ ] Filtres : cette semaine / ce mois / all-time
+
+### 10. Badges & achievements
+- [ ] Badges prédéfinis : First Session, 10 Sessions, 100 Sessions, 7-day Streak, Early Bird (session avant 8h), Night Owl (après 22h), Marathon (5h en une journée)
+- [ ] Display badges sur profil
+- [ ] Partage de badge sur réseaux sociaux (image générée)
+
+## Fonctionnalités Phase 3 (Growth - 4 semaines)
+
+### 11. Intégrations
+- [ ] Discord webhook (notifications de sessions)
+- [ ] Notion API (créer tasks)
+- [ ] Google Calendar (bloquer créneaux)
+
+### 12. Premium features
+- [ ] Stats avancées (meilleure heure, jour, suggestions)
+- [ ] Export de données (CSV, JSON)
+- [ ] Thèmes custom
+- [ ] Sans publicité
+
+### 13. Saisons
+- [ ] Reset tous les 3 mois
+- [ ] Classement de saison
+- [ ] Récompenses de fin de saison
+
+## Structure Database (Supabase)
+
+```sql
+-- Users (extends Supabase auth.users)
+users (
+  id UUID PRIMARY KEY,
+  username TEXT UNIQUE,
+  email TEXT UNIQUE,
+  full_name TEXT,
+  avatar_url TEXT,
+  school TEXT,
+  school_domain TEXT, -- détecté depuis email
+  level INTEGER DEFAULT 1,
+  xp INTEGER DEFAULT 0,
+  streak_days INTEGER DEFAULT 0,
+  last_session_date DATE,
+  created_at TIMESTAMP
+)
+
+-- Sessions
+sessions (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  type TEXT, -- 'work', 'short_break', 'long_break'
+  duration INTEGER, -- en minutes
+  completed BOOLEAN,
+  started_at TIMESTAMP,
+  completed_at TIMESTAMP
+)
+
+-- Friendships
+friendships (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  friend_id UUID REFERENCES users(id),
+  status TEXT, -- 'pending', 'accepted'
+  created_at TIMESTAMP,
+  UNIQUE(user_id, friend_id)
+)
+
+-- Groups
+groups (
+  id UUID PRIMARY KEY,
+  name TEXT,
+  emoji TEXT,
+  description TEXT,
+  invite_code TEXT UNIQUE,
+  created_by UUID REFERENCES users(id),
+  created_at TIMESTAMP
+)
+
+-- Group Members
+group_members (
+  group_id UUID REFERENCES groups(id),
+  user_id UUID REFERENCES users(id),
+  role TEXT, -- 'admin', 'member'
+  joined_at TIMESTAMP,
+  PRIMARY KEY (group_id, user_id)
+)
+
+-- Badges
+user_badges (
+  user_id UUID REFERENCES users(id),
+  badge_id TEXT,
+  earned_at TIMESTAMP,
+  PRIMARY KEY (user_id, badge_id)
+)
+```
+
+## Pages & Routing
+
+```
+/ - Landing page (publique)
+/login - Login page
+/onboarding - Premier setup après inscription
+/dashboard - Page principale avec timer + stats
+/leaderboard - Classements (tabs: amis/groupe/école/national)
+/groups - Liste des groupes + créer/rejoindre
+/group/:id - Page d'un groupe spécifique
+/friends - Gérer amis + demandes
+/profile - Profil utilisateur (stats, badges)
+/profile/:id - Profil public d'un autre user
+/settings - Paramètres (timer, notifs, intégrations)
+```
+
+## UX Flow critique
+
+1. **Première visite** : Landing page → Login Google → Onboarding (nom, école) → Dashboard
+2. **Dashboard** : Timer au centre + "X amis étudient" + Quick actions (Voir classement, Mes groupes)
+3. **Lancer session** : Click Play → Timer démarre → Notif browser "Session commencée" → Fin = son + notif + popup "Bravo ! +10 XP"
+4. **Ajouter amis** : Bouton "Inviter amis" → Modal avec champ email → Envoyer invitation → Accepter dans notifs
+5. **Voir leaderboard** : Click "Classement" → Tab "Amis" par défaut → Voir son rang + top 10
+
+## Wireframe ASCII du Dashboard
+
+```
+┌────────────────────────────────────────────────┐
+│  🍅 StudyTogether          [Profil] [Notifs]   │
+├────────────────────────────────────────────────┤
+│                                                │
+│  ┌──────────────────────────────────────────┐ │
+│  │  👥  12 amis étudient maintenant         │ │
+│  │  Marie, Lucas, Sophie...   [Rejoindre]  │ │
+│  └──────────────────────────────────────────┘ │
+│                                                │
+│  ┌──────────────────────────────────────────┐ │
+│  │  [Travail 25m] [Pause 5m] [Pause 15m]   │ │
+│  │                                          │ │
+│  │            25:00                         │ │
+│  │         (huge timer)                     │ │
+│  │                                          │ │
+│  │         [▶ Play]  [↻ Reset]             │ │
+│  └──────────────────────────────────────────┘ │
+│                                                │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐    │
+│  │ 🏆       │  │ 👥       │  │ ⚙️        │    │
+│  │Classement│  │Groupes   │  │Paramètres │    │
+│  └──────────┘  └──────────┘  └──────────┘    │
+│                                                │
+│  Stats aujourd'hui:                            │
+│  🔥 Streak: 12 jours  ⏱ 3h45 cette semaine   │
+│                                                │
+└────────────────────────────────────────────────┘
+```
+
+## Priorités de développement
+
+**MUST-HAVE pour lancement** :
+1. Timer Pomodoro fonctionnel
+2. Auth Google
+3. Système d'amis basique
+4. Leaderboard amis
+5. Stats personnelles
+6. XP & niveaux
+
+**NICE-TO-HAVE** :
+- Groupes
+- Sessions synchronisées
+- Badges
+- Intégrations
+- Premium
+
+## Ton & Voice
+
+- **Friendly** : Tutoyer, emojis, langage décontracté
+- **Motivant** : "Bravo !", "Continue comme ça !", "T'es au top !"
+- **Pas corporate** : Éviter jargon, rester simple
+- **Exemples** :
+  - ✅ "Lance ta session et écrase tes potes ! 🔥"
+  - ❌ "Initier une session d'étude productive"
+
+## Métriques de succès
+
+- **Activation** : % users qui font 1 session < 24h après signup
+- **Retention D7** : % users qui reviennent après 7 jours (target: >30%)
+- **Engagement** : Sessions par user par semaine (target: >10)
+- **Social** : % users avec au moins 1 ami (target: >60%)
+- **Viral** : Invitations envoyées par user (target: >3)
+
+## Contraintes techniques
+
+- **JAMAIS utiliser localStorage/sessionStorage** dans le code (pas supporté dans certains environnements)
+- Utiliser React state + Supabase pour persistence
+- Mobile-first responsive design
+- Performance : Time to Interactive < 3s
+- PWA-ready (installable sur mobile)
+
+## Questions à résoudre pendant le dev
+
+1. Comment gérer les timezones pour leaderboards hebdo ?
+2. Faut-il permettre de mettre pause au timer ? (peut ruiner l'intégrité Pomodoro)
+3. Comment éviter la triche (refresh page = reset timer) ?
+4. Afficher timer dans l'onglet browser (document.title) ?
+
+## Livrable attendu
+
+Un repo GitHub avec :
+- Code source React + Tailwind
+- Setup Supabase (migrations SQL)
+- README avec instructions de setup
+- .env.example avec variables nécessaires
+- Déployable sur Vercel en 1 click
+
+**Timeline estimée** : 4-6 semaines pour MVP complet si dev full-time, 8-10 semaines si temps partiel.
+
+
+Commence par le MVP Phase 1, en priorisant le timer et le système d'amis. Let's build ! 🚀
