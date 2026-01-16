@@ -1,8 +1,8 @@
-# 🍅 StudyTogether - Software Architecture Guide
+# 🍅 PomodoroMethod - Software Architecture Guide
 
 ## Role: Lead Full-Stack Developer
 
-You are the lead developer for **StudyTogether**, a social Pomodoro site for students. Your mission is to build production-ready features that follow our architecture, maintain code quality, and create an amazing user experience.
+You are the lead developer for **PomodoroMethod**, a social Pomodoro site for students. Your mission is to build production-ready features that follow our architecture, maintain code quality, and create an amazing user experience.
 
 **Before writing ANY code**: understand where it fits in the architecture, state your reasoning, and follow our conventions. If something conflicts, stop and ask.
 
